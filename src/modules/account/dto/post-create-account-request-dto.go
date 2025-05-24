@@ -2,17 +2,21 @@ package accountModuleDto
 
 import (
 	"fmt"
-	"github.com/gin-gonic/gin"
-	"github.com/go-playground/validator/v10"
 	errorHelpers "go-gin-test-job/src/common/error-helpers"
 	errorMessages "go-gin-test-job/src/common/error-messages"
 	"go-gin-test-job/src/common/validations"
 	"go-gin-test-job/src/database/entities"
 	"strings"
+
+	"github.com/gin-gonic/gin"
+	"github.com/go-playground/validator/v10"
 )
 
 type PostCreateAccountRequestDto struct {
 	Address string                 `json:"address" validate:"AccountAddressValidation" example:"1JzfdUygUFk2M6KS3ngFMGRsy5vsH4N37a"`
+	Name    string                 `json:"name" validate:"AccountNameValidation" example:"John Doe"`
+	Rank    uint8                  `json:"rank" validate:"AccountRankValidation" example:"50"`
+	Memo    string                 `json:"memo" example:"Some memo text"`
 	Status  entities.AccountStatus `json:"status" validate:"AccountStatusValidation" enums:"On,Off" example:"On"`
 }
 
@@ -22,6 +26,8 @@ func init() {
 	postCreateAccountRequestDtoValidator = validator.New()
 	_ = postCreateAccountRequestDtoValidator.RegisterValidation("AccountAddressValidation", validations.AccountAddressValidation)
 	_ = postCreateAccountRequestDtoValidator.RegisterValidation("AccountStatusValidation", validations.AccountStatusValidation)
+	_ = postCreateAccountRequestDtoValidator.RegisterValidation("AccountRankValidation", validations.AccountRankValidation)
+	_ = postCreateAccountRequestDtoValidator.RegisterValidation("AccountNameValidation", validations.AccountNameValidation)
 }
 
 func validatePostCreateAccountRequestDto(dto *PostCreateAccountRequestDto) error {
@@ -56,6 +62,10 @@ func PostCreateAccountRequestDtoValidateErrorMessage(err validator.FieldError) s
 		errorMessage = fmt.Sprintf("%s format is wrong", err.Field())
 	} else if err.Field() == "Status" && err.Tag() == "AccountStatusValidation" {
 		errorMessage = fmt.Sprintf("%s must be one of the next values: %s", err.Field(), strings.Join(entities.AccountStatusList, ","))
+	} else if err.Field() == "Rank" && err.Tag() == "AccountRankValidation" {
+		errorMessage = fmt.Sprintf("%s must be between 0 and 100", err.Field())
+	} else if err.Field() == "Name" && err.Tag() == "AccountNameValidation" {
+		errorMessage = fmt.Sprintf("%s must be between 1 and 255 characters", err.Field())
 	} else {
 		errorMessage = errorMessages.DefaultFieldErrorMessage(err.Field())
 	}

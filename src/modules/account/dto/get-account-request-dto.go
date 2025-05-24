@@ -2,14 +2,15 @@ package accountModuleDto
 
 import (
 	"fmt"
-	"github.com/gin-gonic/gin"
-	"github.com/go-playground/validator/v10"
 	errorHelpers "go-gin-test-job/src/common/error-helpers"
 	errorMessages "go-gin-test-job/src/common/error-messages"
 	"go-gin-test-job/src/common/validations"
 	"go-gin-test-job/src/database/entities"
 	stringUtil "go-gin-test-job/src/utils/string"
 	"strings"
+
+	"github.com/gin-gonic/gin"
+	"github.com/go-playground/validator/v10"
 )
 
 const DEFAULT_ACCOUNT_COUNT = 100
@@ -18,6 +19,9 @@ const DEFAULT_ACCOUNT_OFFSET = 0
 var GetAvailableAccountSortField = map[string]string{
 	"id":         "account.id",
 	"updated_at": "account.updated_at",
+	"address":    "account.address",
+	"name":       "account.name",
+	"rank":       "account.rank",
 }
 
 var GetAvailableAccountSortFieldList = func() []string {
@@ -33,6 +37,7 @@ type GetAccountRequestDto struct {
 	Count   int                    `form:"count" json:"count" validate:"min=1,max=100" default:"100" example:"20"`
 	Status  entities.AccountStatus `form:"status" json:"status" validate:"omitempty,AccountStatusValidation" example:"On"`
 	OrderBy string                 `form:"orderBy" json:"orderBy" validate:"omitempty,max=255" example:"id ASC"`
+	Search  string                 `form:"search" json:"search" validate:"omitempty,max=255" example:"John"`
 }
 
 var getAccountRequestDtoValidator *validator.Validate

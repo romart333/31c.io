@@ -1,8 +1,6 @@
 package test
 
 import (
-	"github.com/gin-gonic/gin"
-	"github.com/stretchr/testify/assert"
 	"go-gin-test-job/src/config"
 	appDatabase "go-gin-test-job/src/database"
 	"go-gin-test-job/src/database/entities"
@@ -16,6 +14,9 @@ import (
 	"strings"
 	"testing"
 	"time"
+
+	"github.com/gin-gonic/gin"
+	"github.com/stretchr/testify/assert"
 )
 
 var TestApp *gin.Engine
@@ -40,6 +41,7 @@ func init() {
 }
 
 func InitApp() *gin.Engine {
+
 	config.LoadConfig()
 	// Connect to databases
 	if err := testDatabase.Connect(); err != nil {
@@ -122,8 +124,41 @@ func TestListSort[T any](list []T, orderBy string) bool {
 				isSorted = false
 				break
 			}
+		} else if fieldType.Kind() == reflect.Uint8 {
+			beforeValue, ok1 := before.(uint8)
+			currentValue, ok2 := current.(uint8)
+			// Ensure both values are valid before comparison
+			if !ok1 || !ok2 {
+				return false
+			}
+			if sortParams[1] == "ASC" && beforeValue > currentValue || sortParams[1] == "DESC" && beforeValue < currentValue {
+				isSorted = false
+				break
+			}
+		} else if fieldType.Kind() == reflect.Uint {
+			beforeValue, ok1 := before.(uint)
+			currentValue, ok2 := current.(uint)
+			// Ensure both values are valid before comparison
+			if !ok1 || !ok2 {
+				return false
+			}
+			if sortParams[1] == "ASC" && beforeValue > currentValue || sortParams[1] == "DESC" && beforeValue < currentValue {
+				isSorted = false
+				break
+			}
+		} else if fieldType.Kind() == reflect.Uint64 {
+			beforeValue, ok1 := before.(uint64)
+			currentValue, ok2 := current.(uint64)
+			// Ensure both values are valid before comparison
+			if !ok1 || !ok2 {
+				return false
+			}
+			if sortParams[1] == "ASC" && beforeValue > currentValue || sortParams[1] == "DESC" && beforeValue < currentValue {
+				isSorted = false
+				break
+			}
 		} else {
-			logger.Logger.Fatal().Msg("Unsupported type")
+			logger.Logger.Fatal().Msgf("Unsupported type: %v", fieldType.Kind())
 		}
 
 	}
@@ -169,6 +204,9 @@ func getFieldValue(obj interface{}, fieldName string) (interface{}, bool) {
 func CompareAccount(t *testing.T, account *entities.Account, accountDto accountModuleDto.AccountDto) {
 	assert.Equal(t, account.Id, accountDto.Id)
 	assert.Equal(t, account.Address, accountDto.Address)
+	assert.Equal(t, account.Name, accountDto.Name)
+	assert.Equal(t, account.Rank, accountDto.Rank)
+	assert.Equal(t, account.Memo, accountDto.Memo)
 	assert.Equal(t, string(account.Status), accountDto.Status)
 	assert.Equal(t, account.CreatedAt, accountDto.CreatedAt)
 	assert.Equal(t, account.UpdatedAt, accountDto.UpdatedAt)

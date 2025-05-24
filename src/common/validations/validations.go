@@ -1,10 +1,13 @@
 package validations
 
 import (
-	"github.com/go-playground/validator/v10"
 	"go-gin-test-job/src/database/entities"
 	addressValidationUtil "go-gin-test-job/src/utils/address-validation"
+	nameValidationUtil "go-gin-test-job/src/utils/name-validation"
+	rankValidationUtil "go-gin-test-job/src/utils/rank-validation"
 	"strings"
+
+	"github.com/go-playground/validator/v10"
 )
 
 func AccountStatusValidation(fl validator.FieldLevel) bool {
@@ -19,13 +22,20 @@ func AccountStatusValidation(fl validator.FieldLevel) bool {
 
 func AccountAddressValidation(fl validator.FieldLevel) bool {
 	address := fl.Field().String()
-	if addressValidationUtil.IsValidAddress(address) {
-		return true
-	}
-	return false
+	return addressValidationUtil.IsValidAddress(address)
 }
 
 func NotEmpty(fl validator.FieldLevel) bool {
 	str := fl.Field().String()
 	return strings.TrimSpace(str) != ""
+}
+
+func AccountRankValidation(fl validator.FieldLevel) bool {
+	rank := fl.Field().Uint()
+	return rankValidationUtil.IsValidRank(rank)
+}
+
+func AccountNameValidation(fl validator.FieldLevel) bool {
+	name := fl.Field().String()
+	return nameValidationUtil.IsValidName(name)
 }

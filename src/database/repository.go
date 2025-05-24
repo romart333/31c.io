@@ -22,11 +22,11 @@ func getDb(tx *gorm.DB) *gorm.DB {
 
 ///// Account queries
 
-func GetAccountsAndTotal(status entities.AccountStatus, orderParams map[string]string, offset int, count int) ([]*entities.Account, int64) {
+func GetAccountsAndTotal(status entities.AccountStatus, orderParams map[string]string, offset int, count int, search string) ([]*entities.Account, int64) {
 	var total int64
 	var accounts []*entities.Account
-	query := getBaseAccountsQuery(status)
-	totalQuery := getBaseAccountsQuery(status)
+	query := getBaseAccountsQuery(status, search)
+	totalQuery := getBaseAccountsQuery(status, search)
 	for key, value := range orderParams {
 		query = query.Order(fmt.Sprintf("account.%s %s", key, value))
 	}
@@ -38,10 +38,17 @@ func GetAccountsAndTotal(status entities.AccountStatus, orderParams map[string]s
 	return accounts, total
 }
 
-func getBaseAccountsQuery(status entities.AccountStatus) *gorm.DB {
+func getBaseAccountsQuery(status entities.AccountStatus, search string) *gorm.DB {
 	query := DbConn.Table(accountTableName() + " account")
 	if status != "" {
 		query = query.Where("account.status = ?", status)
+	}
+	if search != "" {
+		searchPattern := "%" + search + "%"
+		query = query.Where(
+			"account.address LIKE ? OR account.name LIKE ? OR account.memo LIKE ?",
+			searchPattern, searchPattern, searchPattern,
+		)
 	}
 	return query
 }
